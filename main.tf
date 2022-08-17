@@ -6,11 +6,29 @@ locals {
   e = 101
 }
 
-resource "random_pet" "dog" {
+variable "name_length" {
+  default = 4
+}
+
+resource "random_pet" "always_new" {
   lifecycle {
     precondition {
-      condition     = local.e == 100
-      error_message = "length must be exactly 100"
+      condition     = var.name_length > 5 // false triggers error
+      error_message = "Name length must be greater than 5."
     }
+
+    # postcondition {
+    #   condition     = var.name_length > 10 // false triggers error
+    #   error_message = "Name length must be greater than 5."
+    # }
   }
+
+  keepers = {
+    uuid = uuid() # Force a new name each time
+  }
+  length = var.name_length
+}
+
+output "pet" {
+  value = random_pet.always_new.id
 }
